@@ -173,7 +173,7 @@ We identify each frame by its sequence number overall (not just within
 its own scan.)
 """
 
-output_scan_info(scan_info, all_frames, output_file, new_url; prepend_dir = "") = begin
+output_scan_info(scan_info, all_frames, output_file, new_url; prepend_dir = "", arch = nothing) = begin
 
     sl = create_scan_list(scan_info)
     exp_info = Dict([s=>scan_info[s][2]["time"] for s in keys(scan_info)])
@@ -185,7 +185,7 @@ output_scan_info(scan_info, all_frames, output_file, new_url; prepend_dir = "") 
     generate_step_info(op, sl, exp_info)
     generate_array_info(op, sl)
     generate_ids(op, sl)
-    generate_external_ids(op, new_url, all_frames, sl, prepend_dir)
+    generate_external_ids(op, new_url, all_frames, sl, prepend_dir, comp=arch)
     
 end
 
@@ -286,16 +286,32 @@ generate_external_ids(op, fulluri, all_frames, scan_list, prepend_dir; comp="TBZ
     header = """loop_
 _array_data_external_data.id
 _array_data_external_data.format
-_array_data_external_data.archive_format
 _array_data_external_data.uri
+"""
+    if !isnothing(arch)
+        header = header *
+"""_array_data_external_data.archive_format
 _array_data_external_data.archive_path"""
+    end
+
+    # If comp is nothing, then each frame has a separate URI and is treated as a local file.
+    # If comp is something, then each frame is relative to a single URI and is output
+    # separately.
     println(op, header)
     ctr = 0
     for (s,f) in scan_list
         for i in 1:f
             ctr += 1
             fname = all_frames[(s,i)]
-            println(op, "  $ctr $fmt $comp $fulluri $prepend_dir" * "/" * "$fname")
+            print(op, "  $ctr $fmt $fulluri")
+
+            # A too-clever-by-half way of optionally live constructing a URL
+            
+            if !isnothing(arch)
+                print(op, "  $comp $prepend_dir")
+            end
+            
+            println(op, "/" * "$fname")
         end
     end
     println(op,"")
@@ -357,6 +373,32 @@ _diffrn_data_frame.binary_id"""
     end
 end
 
+determine_archive(location) = begin
+
+    arch = nothing
+    
+    if location == []
+        location = "file://" * frame_dir
+        
+    else
+        location = parsed_args["location"][]
+        long_end = location[end-5:end]
+        short_end = location[end-2:end]
+        
+        if short_end == "tgz" || long_end == "tar.gz"
+            arch = "TGZ"
+        elseif short_end == "tbz" || long_end == "tar.bzip2"
+            arch = "TBZ"
+        elseif short_end == "zip"
+            arch = "ZIP"
+        end
+
+    end
+
+    return arch, location
+        
+end
+
 parse_cmdline(d) = begin
 
     s = ArgParseSettings(d)
@@ -371,12 +413,10 @@ parse_cmdline(d) = begin
         "-o", "--output"
         help = "Output file to write to, if missing stdout"
         nargs = 1
-        default = [nothing]
         "-a", "--axis"
         nargs = 2
         metavar = ["cbf", "new"]
         action = "append_arg"
-        default = []
         help = "Change axis name from <cbf> to <new> in output file to match goniometer axis definitions. May be used multiple times for multiple axis renaming" 
         "directory"
         help = "Directory containing scan frames in minicbf format"
@@ -407,9 +447,13 @@ if abspath(PROGRAM_FILE) == @__FILE__
     end
     
     # Output CIF fragment
+
+    arch, location = determine_archive(parsed_args["location"])
     
+    out_file = parsed_args["output"] != [] ? parsed_args["output"][] : nothing
     if do_output
-        output_scan_info(scan_info, all_frames, parsed_args["output"], parsed_args["location"],
-                         prepend_dir = prepend_dir)
+        output_scan_info(scan_info, all_frames, out_file, location,
+                         prepend_dir = prepend_dir,
+                         arch = arch)
     end
 end

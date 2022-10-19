@@ -19,7 +19,8 @@ prepended.
 
 2. Actual values for any missing geometric items (`?` characters in
 the above file) should be inserted. Currently this is the beam centre
-in mm when all axes are at their zero settings.
+in mm when all axes are at their zero settings and the dimensions of
+the detector in pixels.
 
 3. A data block header of the form `data_<someheadername>` prepended.
 

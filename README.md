@@ -30,3 +30,8 @@ While we try our best, unfortunately we can make no claims as to the accuracy of
 by third parties. Treat this information as default or backup information, always preferring information in the raw data files
 themselves. Mistakes in geometry specifications will usually lead to problems in data reduction, so do check that data
 are being correctly reduced, and please advise of any errors by raising an issue.
+
+## Tools
+
+The `Tools` directory contains some useful programs for generating imgCIF files. See the `README` in
+that directory for further information.

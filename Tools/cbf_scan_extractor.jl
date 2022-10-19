@@ -8,12 +8,12 @@
 # 5. axis names are drawn from the lists below
 # 6. "<axis>_increment" signals the increment
 
-using Printf, ArgParse
+using ArgParse
 
 # Configuration information
 
-const rot_axes = ("chi", "phi", "detector_2theta", "twotheta", "omega")
-const trans_axes = ("detector_distance", "dx")
+const rot_axes = ("chi", "phi", "detector_2theta", "two_theta", "omega")
+const trans_axes = ("detector_distance", "dx", "trans")
 
 is_trans_axis(axis) = axis in trans_axes
 is_rot_axis(axis) = axis in rot_axes
@@ -102,28 +102,31 @@ get_scan_frame_fmt(frame_dir) = begin
 end
 
 """
-Return any values found for provided axes
+Return any values found for provided axes. All axes converted to lowercase.
 """
 get_frame_info(fname, axes) = begin
     
     header = readuntil(fname, "--CIF-BINARY-FORMAT-SECTION--")
     lines = lowercase.(split(header, "\n"))
 
-    ax_vals = map(ax -> (ax, get_header_value(lines, ax)), axes)
+    ax_vals = map(ax -> (lowercase(ax), (get_header_value(lines, ax))), axes)
     filter!( x-> x[2] != nothing, ax_vals)
+    ax_vals = convert_units.(ax_vals)
 
-    ax_incr = map(ax -> (ax, get_header_value(lines, ax*"_increment")), axes)
+    ax_incr = map(ax -> (lowercase(ax), get_header_value(lines, ax*"_increment")), axes)
     filter!( x-> x[2] != nothing, ax_incr)
+    ax_incr = convert_units.(ax_incr)
     
-    et = get_header_value(lines, "exposure_time")
+    et, _ = get_header_value(lines, "exposure_time")
 
     scan_ax = findfirst( x -> !isapprox(x[2], 0, atol = 1e-6), ax_incr)
+    
     return Dict(ax_vals), ax_incr[scan_ax][1], ax_incr[scan_ax][2], et
     
 end
 
 """
-    Get the value following the string given in matcher
+    Get the value following the string given in matcher and units if present
 """
 get_header_value(lines, matcher) = begin
 
@@ -136,14 +139,31 @@ get_header_value(lines, matcher) = begin
     one_line = one_line[]
     #@debug "Extracting from" one_line
 
-    m = match(Regex("$matcher[ =]+(?<val>[A-Za-z0-9+-.]+)"), one_line)
+    m = match(Regex("$matcher[ =]+(?<val>[A-Za-z0-9+-.]+) +(?<units>[A-Za-z.]+)"), one_line)
     val = strip(m["val"])
+    units = strip(m["units"])
 
     #@debug "To get value" val
 
-    return parse(Float64, val)
+    return parse(Float64, val), units
 end
 
+"""
+   Detect any non-mm translations and convert
+"""
+convert_units(ax_val) = begin
+        name, (val, units) = ax_val
+        if units == "m"
+            val = val * 1000
+        elseif units == "cm"
+            val = val * 10
+        end
+        name, val
+end
+
+"""
+Axes in `scan_info` and `axis_dict` should already be lowercase.
+"""
 rename_axes!(scan_info, axis_dict) = begin
 
     if length(axis_dict) == 0 return end
@@ -382,12 +402,12 @@ determine_archive(location) = begin
         
     else
         location = parsed_args["location"][]
-        long_end = location[end-5:end]
+        long_end = location[end-6:end]
         short_end = location[end-2:end]
         
-        if short_end == "tgz" || long_end == "tar.gz"
+        if short_end == "tgz" || long_end == ".tar.gz"
             arch = "TGZ"
-        elseif short_end == "tbz" || long_end == "tar.bzip2"
+        elseif short_end == "tbz" || long_end == "tar.bz2"
             arch = "TBZ"
         elseif short_end == "zip"
             arch = "ZIP"
@@ -442,8 +462,11 @@ if abspath(PROGRAM_FILE) == @__FILE__
 
     # Rename axes
 
+    @debug "axis" parsed_args["axis"]
     if length(parsed_args["axis"]) > 0
-        rename_axes!(scan_info, parsed_args["axis"])
+        lower_axes = Dict([lowercase(x[1]) => x[2] for x in parsed_args["axis"]])
+        @debug "lower" lower_axes
+        rename_axes!(scan_info, lower_axes)
     end
     
     # Output CIF fragment

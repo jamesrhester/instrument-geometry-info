@@ -47,11 +47,11 @@ get_scan_info(frame_dir) = begin
         # Get information for first and last frame
 
         fname = joinpath( frame_dir, all_frames[(s, 1)])
-        vals, scan_ax, scan_incr, et = get_frame_info(fname, axes)
+        vals, scan_ax, scan_incr, et, wl = get_frame_info(fname, axes)
         start = vals[scan_ax]
 
         fname = joinpath( frame_dir, all_frames[(s, length(frames))])
-        vals, _, _, _ = get_frame_info(fname, axes)
+        vals, _, _, _, _ = get_frame_info(fname, axes)
         finish = vals[scan_ax]
 
         # Check increment and range match
@@ -65,7 +65,8 @@ get_scan_info(frame_dir) = begin
                        "incr" => scan_incr,
                        "time" => et,
                        "start" => start,
-                       "range" => scan_incr * length(frames))
+                       "range" => scan_incr * length(frames),
+                       "wavelength" => wl)
         
         scan_info[s] = (vals, details)
     end
@@ -118,10 +119,11 @@ get_frame_info(fname, axes) = begin
     ax_incr = convert_units.(ax_incr)
     
     et, _ = get_header_value(lines, "exposure_time")
+    wl, _ = get_header_value(lines, "wavelength")
 
     scan_ax = findfirst( x -> !isapprox(x[2], 0, atol = 1e-6), ax_incr)
     
-    return Dict(ax_vals), ax_incr[scan_ax][1], ax_incr[scan_ax][2], et
+    return Dict(ax_vals), ax_incr[scan_ax][1], ax_incr[scan_ax][2], et, wl
     
 end
 
@@ -200,6 +202,7 @@ output_scan_info(scan_info, all_frames, output_file, new_url; prepend_dir = "", 
 
     op = isnothing( output_file ) ? stdout : open(output_file, "w")
 
+    generate_wavelength(op, scan_info)
     generate_scan_settings(op, scan_info)
     generate_scan_info(op, sl)
     generate_step_info(op, sl, exp_info)
@@ -220,6 +223,13 @@ create_scan_list(scan_info) = begin
     @debug "Scan list" slist
     
     return slist
+end
+
+generate_wavelength(op, scan_info; rad_type = "xray") = begin
+    wl = first(scan_info).second[2]["wavelength"]
+    println(op,"_diffrn_radiation_wavelength.id 1")
+    println(op,"_diffrn_radiation_wavelength.value $wl")
+    println(op,"_diffrn_radiation.type $rad_type")
 end
 
 """
@@ -260,9 +270,9 @@ _diffrn_scan_axis.angle_range
             end
             
             if is_trans_axis(a)
-                println(op, "SCAN$s  $a $val $step $range ? ? ?")
+                println(op, "SCAN$s  $a $val $step $range . . .")
             else
-                println(op, "SCAN$s  $a ? ? ? $val $step $range")
+                println(op, "SCAN$s  $a . . . $val $step $range")
             end
         end
         println(op, "")

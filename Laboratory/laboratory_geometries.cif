@@ -97,3 +97,52 @@ _array_structure_list.direction
 _array_structure_list.axis_set_id
  IMAGE 1 512 1 increasing ELEMENT_X
  IMAGE 2 512 2 increasing ELEMENT_Y
+
+# Stoe Stadivari
+
+data_stoe_stadivari
+_diffrn_source.make	Stoe-Stadivari
+_diffrn_source.details	'Located at Benemerita Uiversidad Autonoma de Puebla'
+    loop_
+      _axis.id
+      _axis.type
+      _axis.equipment
+      _axis.depends_on
+      _axis.vector[1]
+      _axis.vector[2]
+      _axis.vector[3]
+      _axis.offset[1]
+      _axis.offset[2]
+      _axis.offset[3]
+         phi        rotation     goniometer  chi        1   0  0   0  0  0
+         chi        rotation     goniometer  omega      0   0  -1   0  0  0
+         omega      rotation     goniometer  .          1   0  0   0  0  0
+         two_theta  rotation     detector    .          1   0  0   0  0  0
+         trans      translation  detector    two_theta  0   0  -1  0  0  0
+         detx       translation  detector    trans      0  -1  0   41.882 16.7 0
+         dety       translation  detector    detx       -1  0  0   0  0  0
+    loop_
+      _array_structure_list_axis.axis_id
+      _array_structure_list_axis.axis_set_id
+      _array_structure_list_axis.displacement
+      _array_structure_list_axis.displacement_increment
+         detx                  1                  0.086                  0.172
+         dety                  2                  0.086                  0.172
+    loop_
+      _array_structure_list.array_id
+      _array_structure_list.axis_set_id
+      _array_structure_list.direction
+      _array_structure_list.index
+      _array_structure_list.precedence
+      _array_structure_list.dimension
+         1              1              increasing              1              1    195
+         1              2              increasing              2              2    487
+    loop_
+      _diffrn_detector.id
+      _diffrn_detector.number_of_axes
+         1                        2
+    loop_
+      _diffrn_detector_axis.axis_id
+      _diffrn_detector_axis.detector_id
+         detx                     DETECTOR
+         dety                     DETECTOR

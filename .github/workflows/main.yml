@@ -43,7 +43,7 @@ jobs:
             check-directory: Laboratory
           id: cif_lab_check
         - name: check_bl_syntax
-          uses: COMCIFS/cif_synax_check_action@master
+          uses: COMCIFS/cif_syntax_check_action@master
           with:
             check-directory: Beamlines
           id: cif_bl_check

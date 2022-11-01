@@ -65,3 +65,68 @@ loop_
         d1     d1_ccd_2  -1.8  201.5  mm
         d1     d1_ccd_3  201.6  -1.4  mm
         d1     d1_ccd_4  -1.7   -1.5  mm
+
+data_AustralianSynchrotron_MX1
+_audit.[local]_details
+;
+    Geometry description for MX1 August 2010. Tested against data to confirm
+    axes are correct. Two theta axis is not checked as was at zero.
+;
+
+_diffrn_source.beamline	MX1
+_diffrn_source.facility Australian_Synchrotron
+_diffrn_source.[local]_config_id Aug2010
+
+    loop_
+      _axis.id
+      _axis.type
+      _axis.equipment
+      _axis.depends_on
+      _axis.vector[1]
+      _axis.vector[2]
+      _axis.vector[3]
+      _axis.offset[1]
+      _axis.offset[2]
+      _axis.offset[3]
+         gravity    .            gravity     .          0   1  0   0  0  0
+         phi        rotation     goniometer  .          1   0  0   0  0  0
+         two_theta  rotation     detector    .          1   0  0   0  0  0
+         trans      translation  detector    two_theta  0   0  -1  0  0  0
+         detx       translation  detector    trans      -1   0  0   105.0 -104.562 0
+         dety       translation  detector    detx       0    1  0   0  0  0
+    loop_
+      _array_structure_list_axis.axis_id
+      _array_structure_list_axis.axis_set_id
+      _array_structure_list_axis.displacement
+      _array_structure_list_axis.displacement_increment
+         detx                  1                  0.0512                  0.1024
+         dety                  2                  0.0512                  0.1024
+    loop_
+      _array_structure_list.array_id
+      _array_structure_list.axis_set_id
+      _array_structure_list.direction
+      _array_structure_list.index
+      _array_structure_list.precedence
+      _array_structure_list.dimension
+         1              1              increasing              1              1    2048
+         1              2              increasing              2              2    2048
+loop_
+  _array_element_size.array_id
+  _array_element_size.index
+  _array_element_size.size
+ IMAGE 1 102.400e-6
+ IMAGE 2 102.400e-6
+
+    loop_
+      _diffrn_detector.id
+      _diffrn_detector.number_of_axes
+         1                        2
+    loop_
+      _diffrn_detector_axis.axis_id
+      _diffrn_detector_axis.detector_id
+         detx                     DETECTOR
+         dety                     DETECTOR
+
+_diffrn_detector_element.id ELEMENT
+_diffrn_detector_element.detector_id DETECTOR
+

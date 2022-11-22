@@ -130,3 +130,62 @@ loop_
 _diffrn_detector_element.id ELEMENT
 _diffrn_detector_element.detector_id DETECTOR
 
+data_esrf_id23
+_audit.block_id	ESRF_ID23
+_audit.[local]_details
+;
+Developed using Zenodo record 3816663
+;
+_diffrn_source.beamline	ID23
+_diffrn_source.facility	ESRF
+_diffrn_source.[local]_config_id 1
+    loop_
+      _axis.id
+      _axis.type
+      _axis.equipment
+      _axis.depends_on
+      _axis.vector[1]
+      _axis.vector[2]
+      _axis.vector[3]
+      _axis.offset[1]
+      _axis.offset[2]
+      _axis.offset[3]
+         omega      rotation     goniometer  .          1  0   0   0
+         0                        0
+         source     .            source      .          0  0   1   0
+         0                        0
+         gravity    .            gravity     .          0  -1  0   0
+         0                        0
+         two_theta  rotation     detector    .          1  0   0   0
+         0                        0
+         trans      translation  detector    two_theta  0  0   -1  0
+         0                        0
+         detx       translation  detector    trans      1  0   0   -209.41100
+         217.7795                0
+         dety       translation  detector    detx       0  -1  0   0
+         0                        0
+    loop_
+      _array_structure_list_axis.axis_id
+      _array_structure_list_axis.axis_set_id
+      _array_structure_list_axis.displacement
+      _array_structure_list_axis.displacement_increment
+         detx                  1                  0.086                  0.172
+         dety                  2                  0.086                  0.172
+    loop_
+      _array_structure_list.array_id
+      _array_structure_list.axis_set_id
+      _array_structure_list.dimension
+      _array_structure_list.direction
+      _array_structure_list.index
+      _array_structure_list.precedence
+         1          1          2463          increasing          1          1
+         1          2          2527          increasing          2          2
+    loop_
+      _diffrn_detector.id
+      _diffrn_detector.number_of_axes
+         1                        2
+    loop_
+      _diffrn_detector_axis.axis_id
+      _diffrn_detector_axis.detector_id
+         detx                     1
+         dety                     1

@@ -124,8 +124,8 @@ loop_
     loop_
       _diffrn_detector_axis.axis_id
       _diffrn_detector_axis.detector_id
-         detx                     DETECTOR
-         dety                     DETECTOR
+         trans                         DETECTOR
+         two_theta                     DETECTOR
 
 _diffrn_detector_element.id ELEMENT
 _diffrn_detector_element.detector_id DETECTOR
@@ -187,5 +187,59 @@ _diffrn_source.[local]_config_id 1
     loop_
       _diffrn_detector_axis.axis_id
       _diffrn_detector_axis.detector_id
-         detx                     1
-         dety                     1
+         trans                     1
+         two_theta                 1
+
+data_HZB_BESSY_14_2
+_audit.block_id	HZB_BESSY_14_2
+_audit.[local]_details
+;
+Developed using SBGRID Dataset 952
+;
+_diffrn_source.beamline	BESSY_14_2
+_diffrn_source.facility	HZB
+_diffrn_source.[local]_config_id 1
+
+loop_
+  _axis.id
+  _axis.type
+  _axis.equipment
+  _axis.depends_on
+  _axis.vector[1]
+  _axis.vector[2]
+  _axis.vector[3]
+  _axis.offset[1]
+  _axis.offset[2]
+  _axis.offset[3]
+         omega     rotation  goniometer          .         1         0         0        0        0        0        
+         dety      translation         detector  detx      0         -1        0        0        0        0        
+         detx      translation         detector  distance  1         0         0        -128.96  142.75500          0     
+         distance  translation         detector  detector_2theta     0         0        -1       0        0        0
+         detector_2theta     rotation  detector  .         1         0         0        0        0        0        
+         gravity   .         gravity   .         0         -1        0         0        0        0        
+         source    .         source    .         0         0         1         0        0        0
+loop_
+  _array_structure_list_axis.axis_id
+  _array_structure_list_axis.axis_set_id
+  _array_structure_list_axis.displacement
+  _array_structure_list_axis.displacement_increment
+         detx      1         0.086     0.172     
+         dety      2         0.086     0.172 
+loop_
+  _array_structure_list.array_id
+  _array_structure_list.index
+  _array_structure_list.axis_set_id
+  _array_structure_list.dimension
+  _array_structure_list.direction
+  _array_structure_list.precedence
+         1         1         1         1475      increasing          1         
+         1         2         2         1679      increasing          2 
+        loop_
+  _diffrn_detector.id
+  _diffrn_detector.number_of_axes
+         det1      2 
+loop_
+  _diffrn_detector_axis.axis_id
+  _diffrn_detector_axis.detector_id
+         distance        det1 
+         detector_2theta det1

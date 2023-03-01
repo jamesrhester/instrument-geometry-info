@@ -437,8 +437,7 @@ class ImgCIFCreator:
         while enter_url:
             external_url = self.cmd_parser.request_input('external_url')
             if external_url == 'force local':
-                filename = filename[1:] if filename.startswith(os.sep) else filename
-                external_url = f"file:{os.sep}" + os.getcwd() + filename
+                external_url = f"file:{os.sep}" + os.path.realpath(filename)
                 enter_url = False
             else:
                 print(' ==> Checking url...')

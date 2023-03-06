@@ -37,17 +37,20 @@ class Extractor(extractor_interface.ExtractorInterface):
 
         # retrieve mini header info
         # only mini header info contains scan details regarding increment etc
-        self._scan_info_mini_header = \
+        self._scan_info_mini_header, self.frame_type = \
             self._get_scan_info_mini_header(directory, self._unique_scans, self.all_frames)
         self._first_scan = sorted(self._scan_info_mini_header.keys())[0]
         self.first_mini_header = \
             self._scan_info_mini_header[self._first_scan][1]['mini_header']
 
         # retrieve full header info
-        self._scan_info_full_header = \
-            self._get_info_full_header(directory, self._unique_scans, self.all_frames)
+        full_header_is_empty = True
+        if self.frame_type == "CBF":
+            self._scan_info_full_header = \
+                self._get_info_full_header(directory, self._unique_scans, self.all_frames)
 
-        full_header_is_empty = self._scan_info_full_header[self._first_scan].keys() == []
+            full_header_is_empty = self._scan_info_full_header[self._first_scan].keys() == []
+
         if full_header_is_empty:
             self._data_name = None
             self._full_header_dict = {}
@@ -469,7 +472,7 @@ as goniometer or detector axes.")
             mini_header = self._get_mini_header(file_name, frame_type)
             axes_settings, scan_ax, scan_incr, exposure, wavelength, = \
                 self._get_frame_info(mini_header, frame_type, axes)
-            x_pixel_size, y_pixel_size, = self._get_pixel_sizes(mini_header)
+            x_pixel_size, y_pixel_size, = self._get_pixel_sizes(mini_header, frame_type)
             print(f"Identified {scan_ax} as scan axis in scan {scan}")
             start = axes_settings[scan_ax]
 
@@ -481,6 +484,7 @@ as goniometer or detector axes.")
             finish = axes_settings[scan_ax]
 
             # Check increment and range match
+            print(f"{start} plus {scan_incr} getting to {finish}")
             if not np.isclose(start + scan_incr * (len(frames)-1), finish, atol=1e-6):
                 raise Exception(
                     f"Scan range does not match increment: \
@@ -502,7 +506,7 @@ as goniometer or detector axes.")
 
         scan_info = extractor_utils.prune_scan_info(scan_info)
 
-        return scan_info
+        return scan_info, frame_type
 
 
     def _get_scan_frame_fmt(self, frame_dir, stem=r".*?_"):
@@ -594,7 +598,7 @@ Try to provide the constant stem of the file name using the -s option.\n")
             # read first 512 characters/bytes as byte string
             header = file.read(512)
             # TODO ensure this! maybe its also 0x0c for the form feed character
-            if b'\f' in header:
+            if b'HEADER_BYTES' in header:
                 return 'SMV'
             if b'_array_data' in header:
                 return 'CBF'
@@ -749,19 +753,17 @@ Try to provide the constant stem of the file name using the -s option.\n")
         return ax_vals, matching_scan_ax, scan_ax[1], exposure, wavelength
 
 
-    def _get_frame_info_smv(self, filename):
-        # TODO most likely this does not work for smv
+    def _get_frame_info_smv(self, smv_header):
+        
         # For a single-axis diffractometer currently
 
-        smv_header = self._get_smv_header(filename)
-
-        ax_vals = [("phi", self._get_smv_header_values(smv_header, "phi"))]
-        ax_vals.append(("trans", self._get_smv_header_values(smv_header, "distance")))
-        ax_incr = [("phi", self._get_smv_header_values(smv_header, "osc_range"))]
+        ax_vals = [("phi", self._get_smv_header_values(smv_header, "phi")[0])]
+        ax_vals.append(("trans", self._get_smv_header_values(smv_header, "distance")[0]))
+        ax_incr = [("phi", self._get_smv_header_values(smv_header, "osc_range")[0])]
         ax_incr.append(("trans", 0.0))
 
-        exposure = self._get_smv_header_values(smv_header, "time")
-        wavelength = self._get_smv_header_values(smv_header, "wavelength")
+        exposure = self._get_smv_header_values(smv_header, "time")[0]
+        wavelength = self._get_smv_header_values(smv_header, "wavelength")[0]
 
         return dict(ax_vals), "phi", ax_incr[0][1], exposure, wavelength
 
@@ -806,8 +808,14 @@ Try to provide the constant stem of the file name using the -s option.\n")
 
         return val, units
 
+    def _get_pixel_sizes(self, lines, frame_type):
 
-    def _get_pixel_sizes(self, lines):
+        if frame_type=='CBF':
+            return self._get_pixel_sizes_cbf(lines)
+        else:
+            return self._get_pixel_sizes_smv(lines)
+
+    def _get_pixel_sizes_cbf(self, lines):
         """Return the pixel sized found in the given lines.
 
         Args:
@@ -840,13 +848,45 @@ Try to provide the constant stem of the file name using the -s option.\n")
 
         return round(x_pixel, 5), round(y_pixel, 5)
 
+    def _get_pixel_sizes_smv(self, lines):
+        """Return the pixel size found in the given lines.
+
+        Args:
+            lines (list): a list of lines found in the mini header
+
+        Returns:
+            x_pixel (float): the x pixel size in mm
+            y_pixel (float): the y pixel size in mm
+        """
+
+        matcher = 'pixel_size'
+        dim = r"([0-9+-.]+)"
+        pattern = re.compile(re.escape(matcher) + r"[ =]+" + dim)
+        matching_lines = list(filter(lambda x: pattern.search(x) is not None, lines))
+        if len(matching_lines) < 1:
+            return None, None, None, None
+
+        val_unit = [re.search(pattern, matching_line)
+                    for matching_line in matching_lines]
+        val_unit = val_unit[0]
+        pixel_sizes = [float(group.strip()) for group in val_unit.groups()]
+
+        # as it is in mm now, we round to 5 decimal places since otherwise:
+        # >>> 0.000172*1000 = 0.17200000000000001
+ 
+        return pixel_sizes[0], pixel_sizes[0]
 
     def _get_smv_header(self, filename):
 
-        # TODO look at smv files
         with open(filename, 'rb') as file:
             header = file.read(512)
-            smv_header = header.split("\n").lower()
+            header = header.decode('utf-8').lower()
+            smv_header = header.split("\n")
+            full_length = int(self._get_smv_header_values(smv_header,"header_bytes")[0])
+            print(f"Found header length {full_length}")
+            file.seek(0)
+            header = file.read(full_length).decode('utf-8').lower()
+            smv_header = header.split("\n")
 
         return smv_header
 
@@ -862,7 +902,7 @@ Try to provide the constant stem of the file name using the -s option.\n")
         # one_line = filter( x-> !isnothing(match(rr, x)), lines)
 
         if len(matching_line) != 1:
-            return None
+            return None, None
 
         matching_line = matching_line[0]
 

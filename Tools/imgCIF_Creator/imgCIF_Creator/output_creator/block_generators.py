@@ -156,7 +156,7 @@ class ImgCIFEntryGenerators():
 
         base = '_array_data'
         entries = {
-            base + ".id" : [],
+            base + ".array_id" : [],
             base + ".binary_id" : [],
             base + ".external_data_id" : [],
             }
@@ -165,7 +165,7 @@ class ImgCIFEntryGenerators():
         for _, frames in scan_list:
             for _ in range(1, frames + 1):
                 counter += 1
-                entries[base + ".id"].append("IMAGE01")
+                entries[base + ".array_id"].append("IMAGE01")
                 entries[base + ".binary_id"].append(counter)
                 entries[base + ".external_data_id"].append(f'ext{counter}')
 

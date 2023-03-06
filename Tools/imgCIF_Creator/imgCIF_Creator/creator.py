@@ -22,12 +22,18 @@ def validate_filename(filename):
 
     if os.path.isdir(filename):
         for root, dirs, files in os.walk(filename + os.sep):
-            pattern = re.compile(r'.*((?P<cbf>\.cbf)\Z|(?P<smv>\.smv)\Z)')
-            matches = [bool(pattern.match(file)) for file in files]
-            occurences = len([match for match in matches if match])
+            pattern = re.compile(r'.*((?P<cbf>\.cbf)\Z|(?P<smv>\.(smv|img))\Z)')
+            matches = [pattern.match(file) for file in files]
+            matches = [match for match in matches if match is not None]
+            occurences = len(matches)
             if occurences > 0:
-                print(f'Found {occurences} cbf or smv files in {root}.')
-                filetype = 'cbf'
+                if matches[0]["cbf"] is not None:
+                    filetype = "cbf"
+                else:
+                    filetype = "smv"
+
+                print(f'Found {occurences} {filetype} files in {root}.')
+                
             else:
                 print(f'Could not find cbf or smv files in {root}. Subfolder(s) \
 {dirs} are not considered automatically.')

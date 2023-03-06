@@ -127,13 +127,10 @@ scan/frame file naming convention",
 def main(filename, stem, output_file):
     """This is an interactive command line interface to collect the necessary
 information to create an imgCIF file out of HDF5, full CBF and some common subset
-of miniCBF
+of miniCBF.
 
     Args:
         filename (str): The filename or directory.
-        gui (bool): Whether to use the gui or the command line.
-        external_url (str): The external url of the files (zenodo url)
-        include (bool): Include the directory name as part of the archive path name.
         stem (str): Constant portion of frame file name.
         output_file (str): Output file to write to.
     """

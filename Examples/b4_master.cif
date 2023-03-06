@@ -2,12 +2,7 @@ data_test1
 _audit.block_id	Diamond_I04
 _diffrn_source.beamline	I04
 _diffrn_source.facility	Diamond
-
-    _array_structure.byte_order         LITTLE_ENDIAN
-    _array_structure.compression_type   "x-CBF_BYTE_OFFSET"
-    _array_structure.encoding_type      BINARY
-
-   _diffrn_radiation.type     'Synchrotron X-ray Source'
+_diffrn_radiation.type     'Synchrotron X-ray Source'
  
  loop_
       _diffrn_radiation_wavelength.id
@@ -93,29 +88,31 @@ _diffrn_source.facility	Diamond
     loop_
       _array_data_external_data.id
       _array_data_external_data.format
+      _array_data_external_data.archive_format
       _array_data_external_data.uri
-    1    CBF test_cbf_unzipped/s01f0001.cbf
-    2    CBF test_cbf_unzipped/s01f0002.cbf
-    3    CBF test_cbf_unzipped/s01f0003.cbf
-    4    CBF test_cbf_unzipped/s01f0004.cbf
-    5    CBF test_cbf_unzipped/s01f0005.cbf
-    6    CBF test_cbf_unzipped/s01f0006.cbf
-    7    CBF test_cbf_unzipped/s01f0007.cbf
-    8    CBF test_cbf_unzipped/s01f0008.cbf
-    9    CBF test_cbf_unzipped/s01f0009.cbf
-    10   CBF test_cbf_unzipped/s01f0010.cbf
-    11   CBF test_cbf_unzipped/s01f0011.cbf
-    12   CBF test_cbf_unzipped/s01f0012.cbf
-    13   CBF test_cbf_unzipped/s01f0013.cbf
-    14   CBF test_cbf_unzipped/s01f0014.cbf
-    15   CBF test_cbf_unzipped/s01f0015.cbf
-    16   CBF test_cbf_unzipped/s01f0016.cbf
-    17   CBF test_cbf_unzipped/s01f0017.cbf
-    18   CBF test_cbf_unzipped/s01f0018.cbf
-    19   CBF test_cbf_unzipped/s01f0019.cbf
-    20   CBF test_cbf_unzipped/s01f0020.cbf
-    21   CBF test_cbf_unzipped/s01f1810.cbf
-    22   CBF test_cbf_unzipped/s01f3600.cbf
+      _array_data_external_data.archive_path
+   1    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0001.cbf
+   2    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0002.cbf
+   3    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0003.cbf
+   4    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0004.cbf
+   5    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0005.cbf
+   6    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0006.cbf
+   7    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0007.cbf
+   8    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0008.cbf
+   9    CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0009.cbf
+   10   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0010.cbf
+   11   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0011.cbf
+   12   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0012.cbf
+   13   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0013.cbf
+   14   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0014.cbf
+   15   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0015.cbf
+   16   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0016.cbf
+   17   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0017.cbf
+   18   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0018.cbf
+   19   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0019.cbf
+   20   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f0020.cbf
+   21   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f1810.cbf
+   22   CBF  TBZ https://zenodo.org/record/5886687/files/cbf_b4_1.tar.bz2 s01f3600.cbf
 
     loop_
       _diffrn_data_frame.id

@@ -243,3 +243,58 @@ loop_
   _diffrn_detector_axis.detector_id
          distance        det1 
          detector_2theta det1
+
+data_19ID_APS
+
+_audit.block_code                       19ID_APS
+_audit.[local]_details
+;
+Developed using SBGRID Dataset 145
+;
+_diffrn_source.beamline                 19ID
+_diffrn_source.facility                 APS
+_diffrn_source.[local]_config_id        1
+_diffrn_radiation.type                  x-ray
+_array_intensities.overload             65535
+
+loop_
+  _axis.id
+  _axis.type
+  _axis.equipment
+  _axis.depends_on
+  _axis.vector[1]
+  _axis.vector[2]
+  _axis.vector[3]
+  _axis.offset[1]
+  _axis.offset[2]
+  _axis.offset[3]
+         phi       rotation  goniometer          .         1         0         0        0        0        0        
+         dety      translation         detector  detx      0         1        0        0        0        0        
+         detx      translation         detector  trans     -1         0         0        162.77  -153.24   0  
+         trans     translation         detector  gravity   0         0         -1       0        0        0        
+         gravity   .         gravity   .         0         1        0         0        0        0        
+         source    .         source    .         0         0         1         0        0        0
+loop_
+  _array_structure_list_axis.axis_id
+  _array_structure_list_axis.axis_set_id
+  _array_structure_list_axis.displacement
+  _array_structure_list_axis.displacement_increment
+         detx      1         0.0512    0.1024    
+         dety      2         0.0512    0.1024 
+loop_
+  _array_structure_list.array_id
+  _array_structure_list.index
+  _array_structure_list.axis_set_id
+  _array_structure_list.dimension
+  _array_structure_list.direction
+  _array_structure_list.precedence
+         1         1         1         3072      increasing          1         
+         1         2         2         3072      increasing          2 
+loop_
+  _diffrn_detector.id
+  _diffrn_detector.number_of_axes
+         det1      1 
+loop_
+  _diffrn_detector_axis.axis_id
+  _diffrn_detector_axis.detector_id
+         trans     det1 

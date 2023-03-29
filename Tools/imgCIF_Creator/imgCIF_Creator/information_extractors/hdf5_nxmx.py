@@ -18,7 +18,7 @@ class Extractor(extractor_interface.ExtractorInterface):
             every extractor class
     """
 
-    def __init__(self, filename, _) -> None:
+    def __init__(self, filename) -> None:
         """This extractor allows to extract the scan and setup information from
         hdf5 NeXus NxMx files. When an instance of the extractor is initialized
         then the information is attempted to be extracted and stored in class
@@ -27,7 +27,6 @@ class Extractor(extractor_interface.ExtractorInterface):
 
         Args:
             filename (str): the filename of the hdf5 master file
-            _ (str): the stem that is not needed for hdf5
         """
 
         super().__init__()

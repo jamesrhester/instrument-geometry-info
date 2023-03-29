@@ -27,15 +27,13 @@ class ImgCIFCreator:
     """See documentation of the __init__ method.
     """
 
-    def __init__(self, filename, filetype, stem) -> None:
+    def __init__(self, filename, filetype) -> None:
         """Initialize the imgCIFCreator and dynamically load the appropriate
         extractor module.
 
         Args:
             filename (str): The filename or directory where the data is located.
             filetype (str): The filetype (smv, cbf or h5)
-            stem (str): constant portion of the filenames to determine the scan
-                frame naming convention.
         """
 
         if filetype in ['smv', 'cbf']:
@@ -45,7 +43,7 @@ class ImgCIFCreator:
             extractor_module = importlib.import_module(
                 'imgCIF_Creator.information_extractors.hdf5_nxmx')
 
-        self.extractor = extractor_module.Extractor(filename, stem)
+        self.extractor = extractor_module.Extractor(filename)
         self.cmd_parser = parser.CommandLineParser()
         self.generators = block_generators.ImgCIFEntryGenerators()
 

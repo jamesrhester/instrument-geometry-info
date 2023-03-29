@@ -18,7 +18,7 @@ class Extractor(extractor_interface.ExtractorInterface):
             every extractor class
     """
 
-    def __init__(self, directory, stem) -> None:
+    def __init__(self, directory) -> None:
         """This extractor allows to extract the scan and setup information from
         cbf and smv files. When an instance of the extractor is initialized
         then the information is attempted to be extracted and stored in class
@@ -28,12 +28,10 @@ class Extractor(extractor_interface.ExtractorInterface):
         Args:
             directory (str): the directory where the extractor tries to extract
                 the information
-            stem (str): constant portion of a frame file name to help determine the
-                scan/frame file naming convention
         """
 
         self._unique_scans, self.all_frames = \
-            self._get_scans_and_frames(directory, stem=stem)
+            self._get_scans_and_frames(directory)
 
         # retrieve mini header info
         # only mini header info contains scan details regarding increment etc
@@ -368,7 +366,7 @@ as goniometer or detector axes.")
         return self._scan_info_mini_header
 
 
-    def _get_scans_and_frames(self, frame_dir, stem=r".*?_"):
+    def _get_scans_and_frames(self, frame_dir):
         """Extract scan information from minicbf or ADSC files.
 
         Assumptions:
@@ -385,15 +383,13 @@ as goniometer or detector axes.")
 
         Args:
             frame_dir (str): the directory where the frames are located
-            stem (regexp, optional): The constant portion of the scan/frame
-                naming convention. Defaults to r".*?_".
 
         Returns:
             tuple: the unique scan names in a set and the scan name / scan frame
                 file mapping
         """
 
-        scan_frame_regex, all_names = self._get_scan_frame_fmt(frame_dir, stem=stem)
+        scan_frame_regex, all_names = get_scan_frame_fmt(frame_dir)
 
         pattern = re.compile(scan_frame_regex)
         all_frames = {}
@@ -456,7 +452,7 @@ as goniometer or detector axes.")
 
         scan_info = {}
         axes = imgcif_creator.ROT_AXES + imgcif_creator.TRANS_AXES
-        frame_type = self._determine_frame_type(
+        frame_type = determine_frame_type(
             os.path.join(frame_dir, all_frames[list(all_frames)[0]]['filename']))
 
         print(f"Discovered {frame_type} files")
@@ -507,104 +503,6 @@ as goniometer or detector axes.")
         scan_info = extractor_utils.prune_scan_info(scan_info)
 
         return scan_info, frame_type
-
-
-    def _get_scan_frame_fmt(self, frame_dir, stem=r".*?_"):
-        """Deduce the scan/frame naming convention.
-
-        Args:
-            frame_dir (str): the directory containing the files with frames
-            stem (regexp, optional): The constant portion of the scan/frame
-                naming convention. Defaults to r".*?_".
-
-        Returns:
-            scan_frame_regex (regexp): the regular expression to identiy scans and frames
-            all_names (list): a list of all filenames
-        """
-
-        file_pattern = re.compile(stem)
-        all_names = []
-        for _, _, files in os.walk(frame_dir):
-            for filename in files:
-                all_names.append(filename)
-
-        # filter out only .cbf and .img files
-        all_names = list(filter(
-            lambda f_name: f_name.endswith(".cbf") or f_name.endswith(".img"),
-            all_names))
-
-        # if given a file stem filter out only the files that start with the stem/file_pattern
-        all_names = list(filter(lambda f_name: file_pattern.match(f_name), all_names))
-        all_names.sort()
-
-        # Analyse number of digits between stem and extension: if less than
-        # 5, no scan present the default stem matches everything until the _
-        test_name = all_names[0]
-        stem_len = len(file_pattern.match(test_name).group(0))
-        num_digits = len(re.sub("[^0-9]", "", test_name[(stem_len-1):-4]))
-
-        if num_digits >= 5:
-            scan_frame_regex = None
-            # Allow first scan not to be scan 1
-            for scan in [str(i) for i in range(1, 10)]:
-                regex = r"(?:" + stem + r")" +\
-                    r"(?:(?P<scan>[0-9]*" + re.escape(scan) + \
-                    r")(?P<sep>0|_)(?P<frame>[0-9]+1)(?P<ext>\.cbf|img))"
-                # keep in mind that re.match matche only the beginning of string
-                match = re.match(regex, all_names[0])
-
-                if match:
-                    scan_len = len(match.group("scan"))
-                    frame_len = len(match.group("frame"))
-
-                    # if the separator is a 0, include it
-                    if match.group("sep") == "0":
-                        frame_len += 1
-
-                    scan_frame_regex = r"(?:" + stem + r")" +\
-                        r"(?:(?P<scan>[0-9]{" + re.escape(str(scan_len)) + r"})" +\
-                        r"_?(?P<frame>[0-9]{" + re.escape(str(frame_len)) + r"}))"
-
-                    break
-        else:
-            scan_frame_regex = r"(?:" + stem + r")" + r"(?:(?P<frame>[0-9]+))"
-
-        if scan_frame_regex is None:
-            print(f"Cannot find a scan/frame naming pattern for {test_name}. \
-Try to provide the constant stem of the file name using the -s option.\n")
-            sys.exit()
-
-        assert re.match(scan_frame_regex, all_names[-1]), "Regular expression for first \
-    frame is not matching the last frame."
-
-        print(f'\nFound scan/frame naming convention!')
-
-        return scan_frame_regex, all_names
-
-
-    def _determine_frame_type(self, filename):
-        """Determine the type of a frame file: currently SMV (ADSC) and CBF are
-        recognised.
-
-        Args:
-            filename (str): the filename for which the frame type should be
-                determined
-
-        Returns:
-            str: the fileformat
-        """
-
-        with open(filename, 'rb') as file:
-            # read first 512 characters/bytes as byte string
-            header = file.read(512)
-            # TODO ensure this! maybe its also 0x0c for the form feed character
-            if b'HEADER_BYTES' in header:
-                return 'SMV'
-            if b'_array_data' in header:
-                return 'CBF'
-
-        return ''
-
 
     def _get_frame_info(self, mini_header, frame_type, axes):
         """Choose the method to extract frame information according to the fileformat
@@ -993,3 +891,127 @@ Try to provide the constant stem of the file name using the -s option.\n")
             matching_scan_ax = osc_axis[0]
 
         return scan_ax, matching_scan_ax, ax_vals
+
+# Utility routines.
+
+def get_scan_frame_fmt(frame_dir):
+    """Deduce the scan/frame naming convention.
+
+        Args:
+            frame_dir (str): the directory containing the files with frames
+
+        Returns:
+            scan_frame_regex (regexp): the regular expression to identiy scans and frames
+            all_names (list): a list of all filenames
+    """
+
+    all_names = []
+    for _, _, files in os.walk(frame_dir):
+        for filename in files:
+            all_names.append(filename)
+
+    # filter out only .cbf and .img files
+    all_names = list(filter(
+        lambda f_name: f_name.endswith(".cbf") or f_name.endswith(".img"),
+        all_names))
+
+    all_names.sort()
+
+    # Stem is constant part
+
+    stem_len = get_constant_part(all_names)
+    stem = all_names[0][0:stem_len]
+    
+    # Analyse the frame numbers (final digits). If any are repeated, there
+    # is more than one scan
+
+    frame_len = get_frame_digits(all_names[1], stem_len)
+    
+    regex = r"(?:" + re.escape(stem) + r")" + r"(?P<scan>[0-9A-Za-z]*)" +\
+            r"(?P<sep>(_|\.)?)(?P<frame>[0-9]{" + str(frame_len) + "})(?P<ext>\.cbf|\.img)"
+    match = re.match(regex, all_names[0])
+    if match:
+        all_parts = [re.match(regex, x) for x in all_names]
+        frames = [m.group("frame") for m in all_parts]
+        if len(set(frames)) != len(frames):
+
+            # More than one scan
+
+            sep = all_parts[0].group("sep")
+
+            scan_frame_regex = r"(?:" + re.escape(stem) + r")" +\
+                               r"(?:(?P<scan>[0-9A-Za-z]+)" +\
+                               re.escape(sep) +\
+                               r"(?P<frame>[0-9]{" + re.escape(str(frame_len)) + r"}))"
+
+        else:
+            scan_frame_regex = r"(?:" + re.escape(stem) + r")" + r"(?:(?P<frame>[0-9]{" + str(frame_len) + "}))"
+
+    if scan_frame_regex is None:
+        print(f"Cannot find a scan/frame naming pattern for {test_name}.")
+        sys.exit()
+
+    assert re.match(scan_frame_regex, all_names[-1]), "Regular expression for first \
+        frame is not matching the last frame."
+
+    print(f'\nFound scan/frame naming convention!')
+
+    return scan_frame_regex, all_names
+
+
+def determine_frame_type(filename):
+    """Determine the type of a frame file: currently SMV (ADSC) and CBF are
+    recognised.
+
+    Args:
+        filename (str): the filename for which the frame type should be
+            determined
+
+    Returns:
+        str: the fileformat
+    """
+
+    with open(filename, 'rb') as file:
+        # read first 512 characters/bytes as byte string
+        header = file.read(512)
+        # TODO ensure this! maybe its also 0x0c for the form feed character
+        if b'HEADER_BYTES' in header:
+            return 'SMV'
+        if b'_array_data' in header:
+            return 'CBF'
+
+    return ''
+
+def get_constant_part(all_names):
+    """ 
+    Return the length of the constant part of the strings given in `all_names`
+    """
+    for ul in range(len(all_names[0])):
+        if len(set((an[ul] for an in all_names))) > 1:
+            break
+    return ul
+        
+def get_frame_digits(test_name, stem_len):
+    """
+    Return the number of digits in the frame counter
+    """
+
+    # Count back from extension until either a zero
+    # is encountered after a non-zero digit, or a
+    # non-digit is found
+    
+    zero_seen = False
+    for pos in range(len(test_name)-5, stem_len - 1, -1):
+        c = test_name[pos]
+        print(c)
+        if not c.isdigit():
+            break
+        if c == '0':
+            zero_seen = True
+            continue
+        if c != '0' and zero_seen:
+            break
+
+    if pos > stem_len: pos += 1
+    
+    return len(test_name) - 4 - pos

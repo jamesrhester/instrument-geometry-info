@@ -101,15 +101,6 @@ cbf and smv files please provide a directory. Exiting.')
 # selected the folder name is prepended to that name
 
 @click.option(
-    "--stem",
-    "-s",
-    type=str,
-    default=r".*?_",
-    help="Constant portion of frame file name. This can help determine the \
-scan/frame file naming convention",
-)
-
-@click.option(
     "--output_file",
     "-o",
     type=str,
@@ -124,14 +115,13 @@ scan/frame file naming convention",
     # callback=validate_filename,
 )
 
-def main(filename, stem, output_file):
+def main(filename, output_file):
     """This is an interactive command line interface to collect the necessary
 information to create an imgCIF file out of HDF5, full CBF and some common subset
 of miniCBF.
 
     Args:
         filename (str): The filename or directory.
-        stem (str): Constant portion of frame file name.
         output_file (str): Output file to write to.
     """
 
@@ -148,18 +138,16 @@ if you provide an input it will be checked against the required format.
     filename, filetype = validate_filename(filename)
     print(f'Identified content of {filename} as {filetype} file(s).')
 
-    command_line_interface(filename, filetype, stem, output_file)
+    command_line_interface(filename, filetype, output_file)
 
 
-def command_line_interface(filename, filetype, stem, output_file):
+def command_line_interface(filename, filetype, output_file):
     """Launch the command line interface to interactively create the imgCIF.
 
     Args:
         filename (str): the filename or directory name where the data is located
         filetype (str): the filetype of the files, either cbf or h5
         external_url (str): the external file url provided by the user
-        stem (str): Constant portion of frame file name. This can help determine the \
-            scan/frame file naming convention
         output_file (str): output file to write to
     """
 
@@ -170,7 +158,7 @@ def command_line_interface(filename, filetype, stem, output_file):
         name = filename.split(os.sep)[-1].strip('.h5')
     cif_file[name] = cif_block
 
-    creator = imgcif_creator.ImgCIFCreator(filename, filetype, stem)
+    creator = imgcif_creator.ImgCIFCreator(filename, filetype)
     creator.create_imgcif(cif_block, filename, filetype)
 
     if output_file == '':

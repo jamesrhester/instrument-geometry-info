@@ -477,7 +477,7 @@ class ImgCIFCreator:
         """
 
         try:
-            get = requests.get(url)
+            get = requests.head(url)
             if get.status_code == 200:
                 return True
             else:
